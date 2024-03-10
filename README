@@ -1,0 +1,7 @@
+An implementation of the classic sliding tile puzzle.
+
+Testing out some of the heuristics described here:
+https://michael.kim/blog/puzzle
+
+Can run off local file system, nary a server needed.
+
