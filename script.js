@@ -156,10 +156,8 @@ async function munge() {
     }
 }
 
-function handleSizeChange() {
-    var selectedSize = document.getElementById("size").value;
-
-    switch (selectedSize) {
+function setSize(boardSize) {
+    switch (boardSize) {
         case "3x3": width = 3; height = 3; break;
         case "4x4": width = 4; height = 4; break;
         case "5x5": width = 5; height = 5; break;
@@ -181,6 +179,10 @@ function handleSizeChange() {
 
     requestAnimationFrame(render);
     document.getElementById("canvas").focus();
+}
+
+function handleSizeChange() {
+    setSize(document.getElementById("size").value);
 }
 
 function handleKeyPress(event) {
@@ -241,7 +243,20 @@ function init() {
 
     document.addEventListener("keydown", handleKeyPress);
 
-    handleSizeChange();
+    window.addEventListener("beforeunload", function(e){
+        localStorage.setItem("board", JSON.stringify(board));
+    });
+
+    var serialized = localStorage.getItem("board");
+    if (serialized) {
+        var deserialized = JSON.parse(serialized);
+        var size = Math.floor(Math.sqrt(deserialized.length));
+        setSize(size + "x" + size);
+        board = deserialized;
+    } else {
+        setSize("4x4");
+    }
+
     solved = false;
 }
 
