@@ -179,6 +179,8 @@ function setSize(boardSize) {
 
     requestAnimationFrame(render);
     document.getElementById("canvas").focus();
+
+    document.getElementById("size").value = boardSize;
 }
 
 function handleSizeChange() {
@@ -243,15 +245,15 @@ function init() {
 
     document.addEventListener("keydown", handleKeyPress);
 
-    window.addEventListener("beforeunload", function(e){
+    window.addEventListener("unload", function(e){
         localStorage.setItem("board", JSON.stringify(board));
     });
 
     var serialized = localStorage.getItem("board");
     if (serialized) {
         var deserialized = JSON.parse(serialized);
-        var size = Math.floor(Math.sqrt(deserialized.length));
-        setSize(size + "x" + size);
+        var boardSize = Math.floor(Math.sqrt(deserialized.length));
+        setSize(boardSize + "x" + boardSize);
         board = deserialized;
     } else {
         setSize("4x4");
