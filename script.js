@@ -7,9 +7,24 @@ var width, height, size, n, board;
 var tileWidth, tileHeight;
 var solved;
 
+var movingTile = {
+    x: 0,
+    y: 0,
+    ofsX: 0,
+    ofsY: 0
+}
+
 function renderTile(x, y, value) {
-    ctx.roundRect(x * tileWidth + 5, y * tileHeight + 5, tileWidth - 10, tileHeight - 10, 10);
-    ctx.fillText("" + value, x * tileWidth + (tileWidth / 2.0), y * tileHeight + (tileHeight / 2.0));
+    let xOfs = 0;
+    let yOfs = 0;
+
+    if (x == movingTile.x && y == movingTile.y) {
+        xOfs = Math.floor(movingTile.ofsX);
+        yOfs = Math.floor(movingTile.ofsY);
+    }
+    
+    ctx.roundRect(x * tileWidth + 5 + xOfs, y * tileHeight + 5 + yOfs, tileWidth - 10, tileHeight - 10, 10);
+    ctx.fillText("" + value, x * tileWidth + (tileWidth / 2.0) + xOfs, y * tileHeight + (tileHeight / 2.0) + yOfs);
 }
 
 function render() {
@@ -26,7 +41,7 @@ function render() {
 
         ctx.fillStyle = "#031113";
         ctx.beginPath();
-        ctx.roundRect(canvas.width / 2 - 150, canvas.height / 2 - 40, 300, 80, 10);
+        ctx.roundRect(canvas.width / 2 - 130, canvas.height / 2 - 40, 260, 80, 10);
         ctx.closePath();
         ctx.fill();
         ctx.fillStyle = "#c0d0cc";
@@ -59,7 +74,27 @@ function findEmptyPosition() {
     }
     return null;
 }
+
+function stepAnimation() {
+    if (Math.abs(movingTile.ofsX) > 0.5) {
+        movingTile.ofsX /= 1.2;
+    } else {
+        movingTile.ofsX = 0;
+    }
     
+    if (Math.abs(movingTile.ofsY) > 0.5) {
+        movingTile.ofsY /= 1.2;
+    } else {
+        movingTile.ofsY = 0;
+    }
+
+    requestAnimationFrame(render);
+    
+    if (Math.abs(movingTile.ofsX) > 0 || Math.abs(movingTile.ofsY)) {
+        setTimeout(stepAnimation, 16);
+    }
+}
+
 function swap(index) {
     if (index < 0 || index >= size) {
         console.log("Index out of bounds");
@@ -69,8 +104,8 @@ function swap(index) {
     let emptyPosition = findEmptyPosition();
 
     //  check if the selected tile is adjacent to the empty position
-    let offset = Math.abs(emptyPosition - index);
-    if (offset != 1 && offset != width) {
+    let offset = emptyPosition - index;
+    if (Math.abs(offset) != 1 && Math.abs(offset) != width) {
         console.log("Invalid position");
         return;
     }
@@ -79,6 +114,28 @@ function swap(index) {
     board[emptyPosition] = board[index];
     board[index] = 0;
 
+    movingTile.x = emptyPosition % width;
+    movingTile.y = Math.floor(emptyPosition / width);
+
+    if (offset == -1) {
+        movingTile.ofsX = tileWidth;
+        movingTile.ofsY = 0;
+    }
+    if (offset == 1) {
+        movingTile.ofsX = -tileWidth;
+        movingTile.ofsY = 0;
+    }
+    if (offset == -width) {
+        movingTile.ofsX = 0;
+        movingTile.ofsY = tileHeight;
+    }
+    if (offset == width) {
+        movingTile.ofsX = 0;
+        movingTile.ofsY = -tileHeight;
+    }
+
+    setTimeout(stepAnimation, 16);
+
     solved = false;
     checkWin();
 
@@ -86,10 +143,13 @@ function swap(index) {
 }
 
 function solve() {
+    let path = findPath(board);
+/*
     for (var i = 0; i < size - 1; i++) {
         board[i] = i + 1;
     }
     board[n] = 0;
+*/
 
     requestAnimationFrame(render);
 }
