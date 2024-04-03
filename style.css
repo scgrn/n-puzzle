@@ -10,7 +10,8 @@ html, body {
 
 body {
     background: var(--main-bg-color);
-    overflow-x: hidden;
+    overflow: hidden;
+    height: 100vh;
 }
 
 canvas {
@@ -19,6 +20,11 @@ canvas {
 }
 
 #container {
+    position: relative;
+    min-height: 100vh;
+}
+
+#game {
     position: absolute;
     left: 50%;
     top: 50%;

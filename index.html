@@ -19,24 +19,27 @@
 
 <body onload="init();">
     <div id="container">
-        <canvas id="canvas" width="320" height="320" tabindex="0"></canvas>
-        <br/>
+        <div id="game">
+            <canvas id="canvas" width="320" height="320" tabindex="0"></canvas>
+            <br/>
 
-        <div id="controls">
-            <label for="size">Size:</label>
-            <select name="size" id="size" onchange="handleSizeChange()">
-                <option value="3x3">3x3</option>
-                <option value="4x4">4x4</option>
-                <option value="5x5">5x5</option>
-            </select> 
-            <button type="button" onClick="solve()">Solve</button>
-            <button type="button" onClick="munge()">Munge</button>
+            <div id="controls">
+                <label for="size">Size:</label>
+                <select name="size" id="size" onchange="handleSizeChange()">
+                    <option value="3x3">3x3</option>
+                    <option value="4x4">4x4</option>
+                    <option value="5x5">5x5</option>
+                </select> 
+                <button type="button" onClick="solve()">Solve</button>
+                <button type="button" onClick="munge()">Munge</button>
+            </div>
         </div>
+
+        <footer id="footer">
+            <a href="https://alienbug.games">alienbug.games</a> | 
+            <a href="https://github.com/scgrn/n-puzzle">github</a>
+        </footer>
     </div>
-    <footer id="footer">
-        <a href="https://alienbug.games">alienbug.games</a> | 
-        <a href="https://github.com/scgrn/n-puzzle">github</a>
-    </footer>
 </body>
 
 
