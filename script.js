@@ -144,6 +144,7 @@ function swap(index) {
 
 function solve() {
     let path = findPath(board);
+    console.log(path);
 /*
     for (var i = 0; i < size - 1; i++) {
         board[i] = i + 1;

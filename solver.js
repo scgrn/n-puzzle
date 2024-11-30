@@ -1,88 +1,98 @@
-// https://codereview.stackexchange.com/questions/108582/my-15-puzzle-solver-is-too-slow
-
-//  2024.03.06/aStar1A.js
-
-function heuristic(board) {
-    return 0;
-}
-
-class Node {
-    constructor(board, parent) {
-        this.board = board;
-        this.parent = parent;
-        
-        this.g = 0;  //  cost from start
-        this.h = heuristic(board);
-        this.f = this.g + this.h; //  total estimated cost
+function heuristic(board, n) {
+    let distance = 0;
+    for (let i = 0; i < board.length; i++) {
+        if (board[i] === 0) {
+            //  skip empty space
+            continue;
+        }
+        const targetRow = Math.floor((board[i] - 1) / n);
+        const targetCol = (board[i] - 1) % n;
+        const currentRow = Math.floor(i / n);
+        const currentCol = i % n;
+        distance += Math.abs(targetRow - currentRow) + Math.abs(targetCol - currentCol);
     }
+    return distance;
 }
 
 function findPath(board) {
-    var size = board.length;
-    var dim = Math.floor(Math.sqrt(size));
-
-    var endNode = [size];
-    for (var i = 0; i < size - 1; i++) {
-        endNode[i] = i + 1;
-    }
-    endNode[size - 1] = 0;
+    const n = Math.sqrt(board.length);
+    const goal = Array.from({ length: n * n }, (_, i) => (i + 1) % (n * n));
     
-    const openSet = [];     //  nodes yet to be evaluated
-    const closedSet = [];   //  already evaluated nodes
+    function isSolved(board) {
+        return board.every((value, index) => value === goal[index]);
+    }
 
-    //  push start node
-    openSet.push(new Node(board, null));
+    function neighbors(board) {
+        const zeroIndex = board.indexOf(0);
+        const row = Math.floor(zeroIndex / n);
+        const col = zeroIndex % n;
+        const moves = [];
 
-    while (openSet.length > 0) {
-        //  get the node with the lowest f cost
-        let currentNode = openSet.reduce((min, node) =>
-            node.f < min.f ? node : min
-        );
-        const currentIndex = openSet.indexOf(currentNode);
-        openSet.splice(currentIndex, 1);
-        closedSet.push(currentNode);
+        const directions = [
+            [-1, 0],    //  up
+            [1, 0],     //  down
+            [0, -1],    //  left
+            [0, 1],     //  right
+        ];
 
-        //  check if goal reached
-        if (currentNode.board.every((value, index) => value === endNode[index])) {
-            return reconstructPath(currentNode);
+        for (const [dr, dc] of directions) {
+            const newRow = row + dr;
+            const newCol = col + dc;
+            if (newRow >= 0 && newRow < n && newCol >= 0 && newCol < n) {
+                const newIndex = newRow * n + newCol;
+                const newBoard = board.slice();
+                [newBoard[zeroIndex], newBoard[newIndex]] = [newBoard[newIndex], newBoard[zeroIndex]];
+                moves.push({ board: newBoard, move: newIndex });
+            }
         }
 
-        //  check neighbors
-        
-        //  var neighbors = node.getNeighbors();
-        //  for every neighbor...
-/*
-                // Skip if already evaluated
-                if (closedSet.some((node) => node.x === neighborX && node.y === neighborY)) {
-                    continue; 
-                }
-
-                const tentativeG = currentNode.g + 1; // Cost to reach neighbor is 1
-
-                let neighbor = openSet.find(
-                    (node) => node.x === neighborX && node.y === neighborY
-                );
-                if (!neighbor || tentativeG < neighbor.g) {
-                    neighbor = new Node(neighborX, neighborY, currentNode);
-                    neighbor.g = tentativeG;
-                    neighbor.f = neighbor.g + heuristic(neighborX, neighborY);
-                    openSet.push(neighbor);
-                }
-*/
-        
+        return moves;
     }
 
-    return null;    //  no path found
+    function search(path, g, threshold) {
+        const node = path[path.length - 1];
+        const f = g + heuristic(node.board, n);
+
+        if (f > threshold) {
+            return f;
+        }
+        if (isSolved(node.board)) {
+            return true;
+        }
+
+        let min = Infinity;
+        for (const neighbor of neighbors(node.board)) {
+            //  avoid cycles
+            if (path.some(prev => prev.board.toString() === neighbor.board.toString())) {
+                continue;
+            }
+            path.push(neighbor);
+            const result = search(path, g + 1, threshold);
+            if (result === true) {
+                return true;
+            }
+            if (result < min) {
+                min = result;
+            }
+            path.pop();
+        }
+        return min;
+    }
+
+    let threshold = heuristic(board, n);
+    const path = [{ board, move: null }];   //  root has no move
+
+    while (true) {
+        const result = search(path, 0, threshold);
+        if (result === true) {
+            //  extract move sequence
+            return path.slice(1).map(node => node.move);    //  exclude initial state
+        }
+        if (result === Infinity) {
+            //  no solution
+            return null;
+        }
+        threshold = result;
+    }
 }
-
-// Helper to reconstruct the path
-function reconstructPath(node) {
-    const path = [];
-    while (node) {
-        path.push({ board: node.board });
-        node = node.parent;
-    }
-    return path.reverse();
-} 
-
 
