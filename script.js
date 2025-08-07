@@ -142,17 +142,17 @@ function swap(index) {
     requestAnimationFrame(render);
 }
 
-function solve() {
+async function solve() {
     let path = findPath(board);
     console.log(path);
-/*
-    for (var i = 0; i < size - 1; i++) {
-        board[i] = i + 1;
-    }
-    board[n] = 0;
-*/
 
-    requestAnimationFrame(render);
+    if (path) {
+        for (const move of path) {
+            swap(move);
+            requestAnimationFrame(render);
+            await sleep(100);
+        }
+    }
 }
 
 function sleep(ms) {
